@@ -1,16 +1,21 @@
-FROM php:8.3-cli
+FROM php:8.3-apache
 
-WORKDIR /app
+WORKDIR /var/www/html
 
 COPY . .
 
-RUN apt-get update && apt-get install -y unzip git libzip-dev
-RUN docker-php-ext-install pdo pdo_mysql
+RUN apt-get update && apt-get install -y unzip git libzip-dev nodejs npm \
+    && docker-php-ext-install pdo pdo_mysql zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --optimize-autoloader
 
-EXPOSE 10000
+RUN npm install
+RUN npm run build
 
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]
