@@ -4,6 +4,10 @@ WORKDIR /var/www/html
 
 COPY . .
 
+# 🔥 IMPORTANT: change Apache root to /public
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's|/var/www/|/var/www/html/public|g' /etc/apache2/apache2.conf
+
 RUN apt-get update && apt-get install -y unzip git libzip-dev nodejs npm \
     && docker-php-ext-install pdo pdo_mysql zip
 
